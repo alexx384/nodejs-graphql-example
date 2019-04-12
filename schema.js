@@ -9,7 +9,13 @@ const ProductType = new graphql.GraphQLObjectType({
     fields: () => ({
         id: { type: graphql.GraphQLString },
         title: { type: graphql.GraphQLString },
-        qty: { type: graphql.GraphQLInt }
+        qty: { type: graphql.GraphQLInt },
+        remarks: {
+            type: graphql.GraphQLList(RemarkType),
+            resolve: (parentValue, args) => {
+                return postgres.RemarkModel.findAll();
+            }
+        }
     })
 });
 
@@ -53,6 +59,15 @@ const InputProductType = new graphql.GraphQLInputObjectType({
     })
 });
 
+const InputRemarkType = new graphql.GraphQLInputObjectType({
+    name: 'RemarkInput',
+    fields: () => ({
+        name: { type: graphql.GraphQLString },
+        group: { type: graphql.GraphQLString },
+        date: { type: graphql.GraphQLString }
+    })
+});
+
 // ===== Define mutations =====
 const RootMutation = new graphql.GraphQLObjectType({
     name: 'RootMutationType',
@@ -60,16 +75,33 @@ const RootMutation = new graphql.GraphQLObjectType({
         createProduct: {
             type: ProductType,
             args: {
-                productInput: { type: InputProductType }
+                product: { type: InputProductType }
             },
-            resolve: (value, { productInput }) => {
+            resolve: (value, { product }) => {
                 return new mongo.Product({
-                    title: productInput.title,
-                    qty: productInput.qty
+                    title: product.title,
+                    qty: product.qty
                 }).save()
-                .then(result => {
-                    console.log(result)
-                    return result;
+                .catch(err => {
+                    console.log(err);
+                    throw err;
+                });
+            }
+        },
+        createRemark: {
+            type: RemarkType,
+            args: {
+                remark: { type: InputRemarkType }
+            },
+            resolve: (value, { remark }) => {
+                return postgres.RemarkModel.create({
+                    name: remark.name,
+                    group: remark.group,
+                    date: remark.date
+                })
+                .catch(err => {
+                    console.log(err);
+                    throw err;
                 });
             }
         }

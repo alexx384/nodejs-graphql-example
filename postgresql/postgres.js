@@ -1,7 +1,3 @@
-/**
- * https://blog.harveydelaney.com/setting-up-graphql-express-and-postgresql/
- * https://medium.com/@james_mensch/node-js-graphql-postgresql-quickstart-91ffa4374663
- */
 const Sequelize = require('sequelize');
 
 const credent = require('./credentials');
@@ -23,7 +19,7 @@ db.authenticate()
 const RemarkModel = db.define('remark', Remark);
 
 // Delete old table and create new one
-db.sync({force: true})
+db.sync()
 .then(() => {
     console.log("The table successfully created");
 })
