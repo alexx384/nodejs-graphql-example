@@ -16,7 +16,10 @@
     "graphql": "^14.2.1",
     "graphql-tools": "^4.0.4",
     "mongoose": "^5.5.0",
-    "pg-promise": "^8.6.4"
+    "pg": "^7.9.0",
+    "pg-hstore": "^2.3.2",
+    "pg-promise": "^8.6.4",
+    "sequelize": "^5.3.3"
   },
   "devDependencies": {
     "graphql": "^14.2.1",

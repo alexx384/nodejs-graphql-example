@@ -2,33 +2,32 @@
  * https://blog.harveydelaney.com/setting-up-graphql-express-and-postgresql/
  * https://medium.com/@james_mensch/node-js-graphql-postgresql-quickstart-91ffa4374663
  */
-const pgPromise = require('pg-promise');
+const Sequelize = require('sequelize');
 
 const credent = require('./credentials');
+const Remark = require('./models/remark');
 
-const pgp = pgPromise({});
+const db = new Sequelize(credent.DB, credent.USER, credent.PASSWORD , {
+    dialect: 'postgres',
+    host: credent.HOST
+});
 
-const config = {
-    host: credent.HOST,
-    port: credent.PORT,
-    database: credent.DB,
-    user: credent.USER,
-    password: credent.PASSWORD
+db.authenticate()
+.then(() => {
+  console.log('Connection has been established successfully.');
+})
+.catch(err => {
+  console.error('Unable to connect to the database:', err);
+});
+
+const RemarkModel = db.define('remark', Remark);
+
+// Delete old table and create new one
+db.sync({force: true})
+.then(() => {
+    console.log("The table successfully created");
+})
+
+module.exports = {
+    RemarkModel
 };
-
-const db = pgp(config);
-
-// Creating table and return none result
-db.none('CREATE TABLE users5($1:raw, $2:raw, $3:raw)', [
-    'ID serial PRIMARY KEY',
-    'username VARCHAR(255)',
-    'email VARCHAR(255)'
-])
-    .then(data => {
-        console.log('successfully created');
-    })
-    .catch(error => {
-        console.log(error);
-    });
-
-module.exports = db;

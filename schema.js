@@ -38,7 +38,7 @@ const RootQuery = new graphql.GraphQLObjectType({
             type: new graphql.GraphQLList(RemarkType),
             args: {},
             resolve: (parentValue, args) => {
-                return postgres.one("select * from test");
+                return postgres.RemarkModel.findAll();
             }
         }
     }

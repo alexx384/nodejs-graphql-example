@@ -39,7 +39,7 @@ GRANT ALL PRIVILEGES ON DATABASE remark_db TO test_user;
 
 To start need to install
 ```bash
-npm install --save express express-graphql graphql mongoose pg-promise
+npm install --save express express-graphql graphql mongoose sequelize pq pg-hstore
 ```
 Install nodemon to automatically restart server, when i change something
 ```
