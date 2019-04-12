@@ -7,7 +7,7 @@ const ProductSchema = require('./models/product');
 ===== Setup connection to MongoDB =====
 */
 const connection = mongoose.createConnection(
-    `mongodb://${credent.MONGO_USER}:${credent.MONGO_PASSWORD}@172.17.0.2/${credent.MONGO_DB}?authSource=admin`,
+    `mongodb://${credent.USER}:${credent.PASSWORD}@${credent.HOST}/${credent.DB}?authSource=admin`,
 );
 
 /*

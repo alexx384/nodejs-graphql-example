@@ -1,6 +1,7 @@
 const graphql = require('graphql');
 
 const mongo = require('./mongodb/mongo');
+const postgres = require('./postgresql/postgres');
 
 // ===== Define types =====
 const ProductType = new graphql.GraphQLObjectType({
@@ -12,15 +13,32 @@ const ProductType = new graphql.GraphQLObjectType({
     })
 });
 
+const RemarkType = new graphql.GraphQLObjectType({
+    name: 'Remark',
+    fields: () => ({
+        id: { type: graphql.GraphQLString },
+        name: { type: graphql.GraphQLString },
+        group: { type: graphql.GraphQLString },
+        date: { type: graphql.GraphQLString }
+    })
+});
+
 // ===== Define queries =====
 const RootQuery = new graphql.GraphQLObjectType({
-    name: 'RootQueryType',
+    name: "RootQueryType",
     fields: {
         products: {
             type: new graphql.GraphQLList(ProductType),
             args: {},
             resolve: (parentValue, args) => {
                 return mongo.Product.find();
+            }
+        },
+        remarks: {
+            type: new graphql.GraphQLList(RemarkType),
+            args: {},
+            resolve: (parentValue, args) => {
+                return postgres.one("select * from test");
             }
         }
     }

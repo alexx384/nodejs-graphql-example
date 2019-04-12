@@ -16,12 +16,12 @@ docker run -it -e MONGO_INITDB_ROOT_USERNAME=root -e MONGO_INITDB_ROOT_PASSWORD=
 ```
 
 ```bash
-docker run --name some-postgres --rm -e POSTGRES_USER=root -e POSTGRES_PASSWORD=mysecretpassword -d postgres
+docker run --name some-postgres --rm -e POSTGRES_DB=test -e POSTGRES_USER=root -e POSTGRES_PASSWORD=mysecretpassword -d postgres
 ```
 
 To manage and repair
 ```bash
-docker exec -it some-postgres psql -U root
+docker exec -it some-postgres psql test root
 ```
 
 or
@@ -39,7 +39,7 @@ GRANT ALL PRIVILEGES ON DATABASE remark_db TO test_user;
 
 To start need to install
 ```bash
-npm install --save express graphql graphql-tools express-graphql mongoose
+npm install --save express express-graphql graphql mongoose pg-promise
 ```
 Install nodemon to automatically restart server, when i change something
 ```
