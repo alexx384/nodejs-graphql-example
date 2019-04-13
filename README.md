@@ -45,3 +45,37 @@ Install nodemon to automatically restart server, when i change something
 ```
 npm install --save-dev nodemon
 ```
+
+The example query request:
+```javascript
+query {
+  students{
+    name,
+    remarks {
+      name
+    }
+  }
+}
+```
+The example mutation request:
+```javascript
+mutation {
+  createStudent(student: {
+    name: "Oliver",
+    surname: "Stown",
+    patronymic: "Jeff",
+    group: "43609/3",
+    course: 4,
+    study: true,
+    remarks: [
+      {
+        name: "Math",
+        grade: 4,
+				last_grade_date: "11.11.11"				        
+      }
+    ]
+  }) {
+    name
+  }
+}
+```

@@ -4,16 +4,20 @@ const mongo = require('./mongodb/mongo');
 const postgres = require('./postgresql/postgres');
 
 // ===== Define types =====
-const ProductType = new graphql.GraphQLObjectType({
-    name: 'Product',
+const StudentType = new graphql.GraphQLObjectType({
+    name: 'Student',
     fields: () => ({
-        id: { type: graphql.GraphQLString },
-        title: { type: graphql.GraphQLString },
-        qty: { type: graphql.GraphQLInt },
-        remarks: {
+        _id:        { type: graphql.GraphQLString },
+        name:       { type: graphql.GraphQLString },
+        surname:    { type: graphql.GraphQLString },
+        patronymic: { type: graphql.GraphQLString },
+        group:      { type: graphql.GraphQLString },
+        course:     { type: graphql.GraphQLInt },
+        study:      { type: graphql.GraphQLBoolean },
+        remarks:    {
             type: graphql.GraphQLList(RemarkType),
             resolve: (parentValue, args) => {
-                return postgres.RemarkModel.findAll();
+                return mongo.Remark.find();
             }
         }
     })
@@ -22,10 +26,10 @@ const ProductType = new graphql.GraphQLObjectType({
 const RemarkType = new graphql.GraphQLObjectType({
     name: 'Remark',
     fields: () => ({
-        id: { type: graphql.GraphQLString },
-        name: { type: graphql.GraphQLString },
-        group: { type: graphql.GraphQLString },
-        date: { type: graphql.GraphQLString }
+        _id:             { type: graphql.GraphQLString },
+        name:            { type: graphql.GraphQLString },
+        grade:           { type: graphql.GraphQLInt },
+        last_grade_date: { type: graphql.GraphQLString }
     })
 });
 
@@ -33,38 +37,43 @@ const RemarkType = new graphql.GraphQLObjectType({
 const RootQuery = new graphql.GraphQLObjectType({
     name: "RootQueryType",
     fields: {
-        products: {
-            type: new graphql.GraphQLList(ProductType),
+        students: {
+            type: new graphql.GraphQLList(StudentType),
             args: {},
             resolve: (parentValue, args) => {
-                return mongo.Product.find();
+                return postgres.Student.findAll();
             }
         },
         remarks: {
             type: new graphql.GraphQLList(RemarkType),
             args: {},
             resolve: (parentValue, args) => {
-                return postgres.RemarkModel.findAll();
+                return mongo.Remark.find();
             }
         }
     }
 });
 
 // ===== Define input types =====
-const InputProductType = new graphql.GraphQLInputObjectType({
-    name: 'ProductInput',
+const InputStudentType = new graphql.GraphQLInputObjectType({
+    name: 'StudentInput',
     fields: () => ({
-        title: { type: graphql.GraphQLString },
-        qty: { type: graphql.GraphQLInt }
+        name: { type: graphql.GraphQLString },
+        surname: { type: graphql.GraphQLString },
+        patronymic: { type: graphql.GraphQLString },
+        group: { type: graphql.GraphQLString },
+        course: { type: graphql.GraphQLInt },
+        study: { type: graphql.GraphQLBoolean },
+        remarks: { type: new graphql.GraphQLList(InputRemarkType) }
     })
 });
 
 const InputRemarkType = new graphql.GraphQLInputObjectType({
     name: 'RemarkInput',
     fields: () => ({
-        name: { type: graphql.GraphQLString },
-        group: { type: graphql.GraphQLString },
-        date: { type: graphql.GraphQLString }
+        name:            { type: graphql.GraphQLString },
+        grade:           { type: graphql.GraphQLInt },
+        last_grade_date: { type: graphql.GraphQLString }
     })
 });
 
@@ -72,16 +81,35 @@ const InputRemarkType = new graphql.GraphQLInputObjectType({
 const RootMutation = new graphql.GraphQLObjectType({
     name: 'RootMutationType',
     fields: {
-        createProduct: {
-            type: ProductType,
+        createStudent: {
+            type: StudentType,
             args: {
-                product: { type: InputProductType }
+                student: { type: InputStudentType }
             },
-            resolve: (value, { product }) => {
-                return new mongo.Product({
-                    title: product.title,
-                    qty: product.qty
-                }).save()
+            resolve: async (value, { student }) => {
+                var remarkIds = [];
+                for (let remarkInput of student.remarks) {
+                    remark = await mongo.Remark.findOne(remarkInput);
+
+                    if (remark == null) {
+                        const remark = await new mongo.Remark(remarkInput).save();
+                        var remarkId = remark.id;
+                    } else {
+                        var remarkId = remark.id;
+                    }
+
+                    remarkIds.push(remarkId.id);
+                }
+
+                return postgres.Student.create({
+                    name: student.name,
+                    surname: student.surname,
+                    patronymic: student.patronymic,
+                    group: student.group,
+                    course: student.course,
+                    study: student.study,
+                    remarks: remarkIds
+                })
                 .catch(err => {
                     console.log(err);
                     throw err;
@@ -94,11 +122,7 @@ const RootMutation = new graphql.GraphQLObjectType({
                 remark: { type: InputRemarkType }
             },
             resolve: (value, { remark }) => {
-                return postgres.RemarkModel.create({
-                    name: remark.name,
-                    group: remark.group,
-                    date: remark.date
-                })
+                return new mongo.Remark(remark).save()
                 .catch(err => {
                     console.log(err);
                     throw err;

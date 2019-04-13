@@ -1,7 +1,7 @@
 const Sequelize = require('sequelize');
 
 const credent = require('./credentials');
-const Remark = require('./models/remark');
+const StudentModel = require('./models/student');
 
 const db = new Sequelize(credent.DB, credent.USER, credent.PASSWORD , {
     dialect: 'postgres',
@@ -10,20 +10,20 @@ const db = new Sequelize(credent.DB, credent.USER, credent.PASSWORD , {
 
 db.authenticate()
 .then(() => {
-  console.log('Connection has been established successfully.');
+  console.log('Connection to PostgresDB has been established successfully.');
 })
 .catch(err => {
-  console.error('Unable to connect to the database:', err);
+  console.error('Unable to connect to the PostgresDB:', err);
 });
 
-const RemarkModel = db.define('remark', Remark);
+const Student = db.define('student', StudentModel);
 
 // Delete old table and create new one
 db.sync()
 .then(() => {
-    console.log("The table successfully created");
+    console.log("The table for PostgresDB is successfully created");
 })
 
 module.exports = {
-    RemarkModel
+  Student
 };

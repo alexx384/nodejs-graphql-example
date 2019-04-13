@@ -1,7 +1,7 @@
 const mongoose = require('mongoose');
 
 const credent = require('./credentials');
-const ProductSchema = require('./models/product');
+const RemarkSchema = require('./models/remark');
 
 /*
 ===== Setup connection to MongoDB =====
@@ -24,8 +24,8 @@ connection.on('error', (err) => {
 /*
 Create models and export them
 */
-Product = connection.model('product', ProductSchema);
+Remark = connection.model('remark', RemarkSchema);
 
 module.exports = {
-    Product
+    Remark
 };
