@@ -86,9 +86,10 @@ const RootMutation = new graphql.GraphQLObjectType({
             args: {
                 student: { type: InputStudentType }
             },
-            resolve: async (value, { student }) => {
+            resolve: async (value, { student: studentInput }) => {
+                // Check if remarks exist
                 var remarkIds = [];
-                for (let remarkInput of student.remarks) {
+                for (let remarkInput of studentInput.remarks) {
                     remark = await mongo.Remark.findOne(remarkInput);
 
                     if (remark == null) {
@@ -101,19 +102,39 @@ const RootMutation = new graphql.GraphQLObjectType({
                     remarkIds.push(remarkId.id);
                 }
 
-                return postgres.Student.create({
-                    name: student.name,
-                    surname: student.surname,
-                    patronymic: student.patronymic,
-                    group: student.group,
-                    course: student.course,
-                    study: student.study,
-                    remarks: remarkIds
-                })
-                .catch(err => {
-                    console.log(err);
-                    throw err;
-                });
+                // Check if student exist
+                const student = await postgres.Student.findOne({ where: {
+                    name: studentInput.name,
+                    surname: studentInput.surname,
+                    patronymic: studentInput.patronymic,
+                    group: studentInput.group,
+                    course: studentInput.course,
+                    study: studentInput.study
+                } });
+
+                // Create student or update existing
+                if (student == null) {
+                    return postgres.Student.create({
+                        name: studentInput.name,
+                        surname: studentInput.surname,
+                        patronymic: studentInput.patronymic,
+                        group: studentInput.group,
+                        course: studentInput.course,
+                        study: studentInput.study,
+                        remarks: remarkIds
+                    })
+                    .catch(err => {
+                        console.log(err);
+                        throw err;
+                    });
+                } else {
+                    for (let remarkId of remarkIds) {
+                        if (student.remarks.includes(remarkId) === false) {
+                            student.remarks.push(remarkId);
+                        }
+                    }
+                    return student.save();
+                }
             }
         },
         createRemark: {
@@ -121,12 +142,18 @@ const RootMutation = new graphql.GraphQLObjectType({
             args: {
                 remark: { type: InputRemarkType }
             },
-            resolve: (value, { remark }) => {
-                return new mongo.Remark(remark).save()
-                .catch(err => {
-                    console.log(err);
-                    throw err;
-                });
+            resolve: async (value, { remark: remarkInput }) => {
+                remark = await mongo.Remark.findOne(remarkInput);
+
+                if (remark == null) {
+                    return new mongo.Remark(remarkInput).save()
+                    .catch(err => {
+                        console.log(err);
+                        throw err;
+                    });
+                } else {
+                    return remark;
+                }
             }
         }
     }
