@@ -17,7 +17,7 @@ const StudentType = new graphql.GraphQLObjectType({
         remarks:    {
             type: graphql.GraphQLList(RemarkType),
             resolve: (parentValue, args) => {
-                return mongo.Remark.find();
+                return mongo.Remark.find({args});
             }
         }
     })
@@ -31,27 +31,6 @@ const RemarkType = new graphql.GraphQLObjectType({
         grade:           { type: graphql.GraphQLInt },
         last_grade_date: { type: graphql.GraphQLString }
     })
-});
-
-// ===== Define queries =====
-const RootQuery = new graphql.GraphQLObjectType({
-    name: "RootQueryType",
-    fields: {
-        students: {
-            type: new graphql.GraphQLList(StudentType),
-            args: {},
-            resolve: (parentValue, args) => {
-                return postgres.Student.findAll();
-            }
-        },
-        remarks: {
-            type: new graphql.GraphQLList(RemarkType),
-            args: {},
-            resolve: (parentValue, args) => {
-                return mongo.Remark.find();
-            }
-        }
-    }
 });
 
 // ===== Define input types =====
@@ -75,6 +54,35 @@ const InputRemarkType = new graphql.GraphQLInputObjectType({
         grade:           { type: graphql.GraphQLInt },
         last_grade_date: { type: graphql.GraphQLString }
     })
+});
+
+// ===== Define queries =====
+const RootQuery = new graphql.GraphQLObjectType({
+    name: "RootQueryType",
+    fields: {
+        students: {
+            type: new graphql.GraphQLList(StudentType),
+            args: {
+                name: { type: graphql.GraphQLString },
+                surname: { type: graphql.GraphQLString },
+                patronymic: { type: graphql.GraphQLString },
+                group: { type: graphql.GraphQLString },
+                course: { type: graphql.GraphQLInt },
+                study: { type: graphql.GraphQLBoolean }
+            },
+            resolve: (parentValue, args) => {
+                console.log(args);
+                return postgres.Student.findAll({where: args});
+            }
+        },
+        remarks: {
+            type: new graphql.GraphQLList(RemarkType),
+            args: {},
+            resolve: (parentValue, args) => {
+                return mongo.Remark.find({args});
+            }
+        }
+    }
 });
 
 // ===== Define mutations =====
